@@ -6,29 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.Nullable;
 
 public class RecordsCommand {
-
-  /* This pattern matches a string with the following form:
-   Minelli|Alister|aminelli2@webs.com|Violet|6/24/1990
-
-   The first [^|]+ matches any string up to the first pipe character,
-   then this is repeated 4 more times for the remaining strings separated
-   by each comma character.
-  */
-  private static final Pattern PIPE_DELIMITED_PATTERN = Pattern.compile("^[^|]+(\\|[^|]+){4}$");
-
-  /* This pattern matches a string with the following form:
-   Minelli,Alister,aminelli2@webs.com,Violet,6/24/1990
-
-   The first [^,]+ matches any string up to the first comma character,
-   then this is repeated 4 more times for the remaining strings separated
-   by each comma character.
-  */
-  private static final Pattern COMMA_DELIMITED_PATTERN = Pattern.compile("^[^,]+(,[^,]+){4}$");
 
   public static void main(String args[]) {
 
@@ -70,15 +50,9 @@ public class RecordsCommand {
   }
 
   private static void ingest(RecordsService recordsService, Path filepath) throws IOException{
-    try (Stream<String> lines = Files.lines(filepath, StandardCharsets.US_ASCII)) {
+    try (Stream<String> lines = Files.lines(filepath, StandardCharsets.UTF_8)) {
       lines.forEach(line -> {
-        String delimiterRegex = " ";
-        if (PIPE_DELIMITED_PATTERN.matcher(line).find()) {
-          delimiterRegex = "\\|";
-        } else if (COMMA_DELIMITED_PATTERN.matcher(line).find()) {
-          delimiterRegex = ",";
-        }
-        Record newRecord = parseRecord(line, delimiterRegex);
+        Record newRecord = Parser.parse(line);
         if (newRecord == null) {
           System.out.println(String.format("The following record did not have the 5 required fields and was ignored: %s", line));
           return;
@@ -87,16 +61,6 @@ public class RecordsCommand {
       });
 
     }
-  }
-
-  @Nullable
-  private static Record parseRecord(String line, String delimeterRegex) {
-    String[] parts = line.split(delimeterRegex);
-    if (parts.length != 5) {
-      System.out.println(String.format("parts: %d", parts.length));
-      return null;
-    }
-    return new Record(parts[0], parts[1], parts[2], parts[3], parts[4]);
   }
 
   private static String printTable(List<Record> records) {
