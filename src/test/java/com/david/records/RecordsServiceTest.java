@@ -1,5 +1,6 @@
 package com.david.records;
 
+import java.util.Comparator;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -18,16 +19,6 @@ public class RecordsServiceTest {
     assertThat("The record should be the same", service.getAllRecords(), hasItems(record));
   }
 
-  @Test(expected = UnsupportedOperationException.class)
-  public void testGetAllRecordsIsNotMutable() {
-    RecordsService service = new RecordsService();
-    List<Record> records = service.getAllRecords();
-    Record newRecord = getDummyRecord();
-
-    // Throws UnsupportedOperationException
-    records.add(newRecord);
-  }
-
   @Test
   public void testGetAllRecordsByLastNameDescending() {
     RecordsService service = new RecordsService();
@@ -40,7 +31,7 @@ public class RecordsServiceTest {
     service.addRecord(anderson);
     service.addRecord(lombardi);
 
-    List<Record> sortedRecords = service.getAllRecordsByLastNameDescending();
+    List<Record> sortedRecords = service.getAllRecords(RecordsService.SortBy.LAST_NAME, RecordsService.SortDirection.DESCENDING);
     assertThat("The records should be sorted in this order by last name: Morales, Lombardi, Chavez, Anderson", sortedRecords, contains(morales, lombardi, chavez, anderson));
   }
 
@@ -56,7 +47,7 @@ public class RecordsServiceTest {
     service.addRecord(dob1990);
     service.addRecord(dob1970);
 
-    List<Record> sortedRecords = service.getAllRecordsByDateOfBirthAscending();
+    List<Record> sortedRecords = service.getAllRecords(RecordsService.SortBy.DATE_OF_BIRTH, RecordsService.SortDirection.ASCENDING);
     assertThat("The records should be sorted in this order by date of birth: 5/29/1970, 5/29/1985, 5/29/1990, 5/29/2021", sortedRecords, contains(dob1970, dob1985, dob1990, dob2021));
   }
 
@@ -72,7 +63,9 @@ public class RecordsServiceTest {
       service.addRecord(blueAnderson);
       service.addRecord(redLombardi);
 
-      List<Record> sortedRecords = service.getAllRecordsByFavoriteColorThenByLastNameAscending();
+    Comparator<Record> favoriteColorAscending = RecordsService.SortBy.FAVORITE_COLOR.getComparator();
+    Comparator<Record> lastNameAscending = RecordsService.SortBy.LAST_NAME.getComparator();
+    List<Record> sortedRecords = service.getAllRecords(favoriteColorAscending.thenComparing(lastNameAscending));
       assertThat("The records should be sorted in this order by ascending favorite color then by ascending last name: blue/Anderson, blue/Chavez, red/Lombardi, red/Morales", sortedRecords, contains(blueAnderson, blueChavez, redLombardi, redMorales));
   }
 

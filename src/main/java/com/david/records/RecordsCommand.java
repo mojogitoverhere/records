@@ -1,10 +1,13 @@
 package com.david.records;
 
+import com.david.records.RecordsService.SortBy;
+import com.david.records.RecordsService.SortDirection;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -40,13 +43,15 @@ public class RecordsCommand {
     }
 
     System.out.println("OUTPUT 1: Sorted by ascending favorite color then last name");
-    System.out.println(printTable(recordsService.getAllRecordsByFavoriteColorThenByLastNameAscending()));
+    Comparator<Record> favoriteColorAscending = SortBy.FAVORITE_COLOR.getComparator();
+    Comparator<Record> lastNameAscending = SortBy.LAST_NAME.getComparator();
+    System.out.println(printTable(recordsService.getAllRecords(favoriteColorAscending.thenComparing(lastNameAscending))));
 
     System.out.println("OUTPUT 2: Sorted by ascending date of birth");
-    System.out.println(printTable(recordsService.getAllRecordsByDateOfBirthAscending()));
+    System.out.println(printTable(recordsService.getAllRecords(SortBy.DATE_OF_BIRTH, SortDirection.ASCENDING)));
 
     System.out.println("OUTPUT 3: Sorted by descending last name");
-    System.out.println(printTable(recordsService.getAllRecordsByLastNameDescending()));
+    System.out.println(printTable(recordsService.getAllRecords(SortBy.LAST_NAME, SortDirection.DESCENDING)));
   }
 
   private static void ingest(RecordsService recordsService, Path filepath) throws IOException{
@@ -54,12 +59,11 @@ public class RecordsCommand {
       lines.forEach(line -> {
         Record newRecord = Parser.parse(line);
         if (newRecord == null) {
-          System.out.println(String.format("The following record did not have the 5 required fields and was ignored: %s", line));
+          System.out.println(String.format("WARNING: The following record did not have the 5 required fields and was ignored: %s", line));
           return;
         }
         recordsService.addRecord(newRecord);
       });
-
     }
   }
 
@@ -95,6 +99,7 @@ public class RecordsCommand {
 
     StringBuilder builder = new StringBuilder();
 
+    // Add the table header
     addTableCell(builder, lastNameLabel, minLastNameSize);
     addTableCell(builder, firstNameLabel, minFirstNameSize);
     addTableCell(builder, emailLabel, minEmailSize);

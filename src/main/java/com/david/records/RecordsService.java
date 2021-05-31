@@ -1,12 +1,35 @@
 package com.david.records;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class RecordsService {
+
+  // TODO choose how to handle case so that it is consistent
+  public enum SortBy {
+    LAST_NAME(Comparator.comparing(r -> r.getLastName().toLowerCase())),
+    FIRST_NAME(Comparator.comparing(r -> r.getFirstName().toLowerCase())),
+    EMAIL(Comparator.comparing(r -> r.getEmail().toLowerCase())),
+    FAVORITE_COLOR(Comparator.comparing(r -> r.getFavoriteColor().toLowerCase())),
+    DATE_OF_BIRTH(Comparator.comparing(Record::getDateOfBirth));
+
+    private final Comparator<Record> comparator;
+
+    SortBy(Comparator<Record> comparator) {
+      this.comparator = comparator;
+    }
+
+    public Comparator<Record> getComparator() {
+      return comparator;
+    }
+  }
+
+  public enum SortDirection {
+    ASCENDING,
+    DESCENDING
+  }
 
   private List<Record> records = new ArrayList<>();
 
@@ -15,20 +38,19 @@ public class RecordsService {
   }
 
   public List<Record> getAllRecords() {
-    return Collections.unmodifiableList(records);
+    return getAllRecords(SortBy.LAST_NAME, SortDirection.ASCENDING);
   }
 
-  public List<Record> getAllRecordsByLastNameDescending() {
-    return records.stream().sorted(Comparator.comparing(Record::getLastName).reversed()).collect(Collectors.toList());
+  public List<Record> getAllRecords(Comparator<Record> comparator) {
+    return records.stream().sorted(comparator).collect(Collectors.toList());
   }
 
-  public List<Record> getAllRecordsByDateOfBirthAscending() {
-    return records.stream().sorted(Comparator.comparing(Record::getDateOfBirth)).collect(Collectors.toList());
-  }
+  public List<Record> getAllRecords(SortBy sortBy, SortDirection sortDirection) {
+    Comparator<Record> comparator = sortBy.getComparator();
+    if (sortDirection == SortDirection.DESCENDING) {
+      comparator = comparator.reversed();
+    }
 
-  public List<Record> getAllRecordsByFavoriteColorThenByLastNameAscending() {
-    Comparator<Record> favoriteColorAscending = Comparator.comparing(Record::getFavoriteColor);
-    Comparator<Record> lastNameAscending = Comparator.comparing(Record::getLastName);
-    return records.stream().sorted(favoriteColorAscending.thenComparing(lastNameAscending)).collect(Collectors.toList());
+    return getAllRecords(comparator);
   }
 }
