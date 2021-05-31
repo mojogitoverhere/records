@@ -31,41 +31,31 @@ public class RecordsCommand {
 
   public static void main(String args[]) {
 
-    // Verify a filename is passed in as an argument
-    if (args.length != 1) {
-      System.out.println("ERROR: A file to ingest must be specified.");
+    // Verify at least one filename is passed in as an argument
+    if (args.length < 1) {
+      System.out.println("ERROR: One or more files must be specified to ingest.");
       return;
     }
 
-    // Make sure the file exists and is readable
-    String filename = args[0];
-    Path filepath = Paths.get(filename);
-    if (!Files.isReadable(filepath)) {
-      System.out.println(String.format("ERROR: The file [%s] is not readable.", filename));
-      return;
+    // Make sure the files exist and are readable
+    for (String filename : args) {
+      Path filepath = Paths.get(filename);
+      if (!Files.isReadable(filepath)) {
+        System.out.println(String.format("ERROR: The file [%s] is not readable.", filename));
+        return;
+      }
     }
 
     RecordsService recordsService = new RecordsService();
 
-    try (Stream<String> lines = Files.lines(filepath, StandardCharsets.US_ASCII)) {
-      lines.forEach(line -> {
-        String delimiterRegex = " ";
-        if (PIPE_DELIMITED_PATTERN.matcher(line).find()) {
-          delimiterRegex = "\\|";
-        } else if (COMMA_DELIMITED_PATTERN.matcher(line).find()) {
-          delimiterRegex = ",";
-        }
-        Record newRecord = parseRecord(line, delimiterRegex);
-        if (newRecord == null) {
-          System.out.println(String.format("The following record did not have the 5 required fields and was ignored: %s", line));
-          return;
-        }
-        recordsService.addRecord(newRecord);
-      });
-
-    } catch (IOException e) {
-      System.out.println(String.format("ERROR: An error occurred while reading the file [%s]: %s", filename, e.getMessage()));
-      return;
+    for (String filename : args) {
+      try {
+        Path filepath = Paths.get(filename);
+        ingest(recordsService, filepath);
+      } catch (IOException e) {
+        System.out.println(String.format("ERROR: An error occurred while reading file [%s]: %s", filename, e.getMessage()));
+        return;
+      }
     }
 
     System.out.println("OUTPUT 1: Sorted by ascending favorite color then last name");
@@ -82,6 +72,26 @@ public class RecordsCommand {
     System.out.println("First Name\tLast Name\tEmail\tFavorite Color\tDate of Birth");
     recordsService.getAllRecordsByLastNameDescending().forEach(r -> System.out.println(print(r)));
     System.out.println();
+  }
+
+  private static void ingest(RecordsService recordsService, Path filepath) throws IOException{
+    try (Stream<String> lines = Files.lines(filepath, StandardCharsets.US_ASCII)) {
+      lines.forEach(line -> {
+        String delimiterRegex = " ";
+        if (PIPE_DELIMITED_PATTERN.matcher(line).find()) {
+          delimiterRegex = "\\|";
+        } else if (COMMA_DELIMITED_PATTERN.matcher(line).find()) {
+          delimiterRegex = ",";
+        }
+        Record newRecord = parseRecord(line, delimiterRegex);
+        if (newRecord == null) {
+          System.out.println(String.format("The following record did not have the 5 required fields and was ignored: %s", line));
+          return;
+        }
+        recordsService.addRecord(newRecord);
+      });
+
+    }
   }
 
   @Nullable
