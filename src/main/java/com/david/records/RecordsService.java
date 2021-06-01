@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 public class RecordsService {
 
-  // TODO choose how to handle case so that it is consistent
   public enum SortBy {
     LAST_NAME(Comparator.comparing(r -> r.getLastName().toLowerCase())),
     FIRST_NAME(Comparator.comparing(r -> r.getFirstName().toLowerCase())),
