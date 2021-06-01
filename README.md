@@ -1,4 +1,4 @@
-# Records
+# Records Application
 This application includes a command line tool and a web
 server to ingest and display user records.
 
@@ -15,9 +15,11 @@ displayed in three different forms:
 2. sorted by ascending date of birth
 3. sorted by descending last name
 
-Run the command line tool by doing
+Run the command line tool with the following command. Multiple
+records files can be ingested at the same time, even if each one
+is using a different format
 ```
-java -cp target/records-1.0-SNAPSHOT.jar com.david.records.RecordsCommand <records-file> 
+java -cp target/records-1.0-SNAPSHOT.jar com.david.records.RecordsCommand <records-file> ...
 ```
 
 Each records file must consist of one record per line,
@@ -32,9 +34,9 @@ Minelli|Alister|aminelli2@webs.com|Violet|6/24/1990
 ```
 Minelli,Alister,aminelli2@webs.com,Violet,6/24/1990
 ```
-- Or a space
+- Or a space:
 ```
-Minelli,Alister,aminelli2@webs.com,Violet,6/24/1990
+Minelli Alister aminelli2@webs.com Violet 6/24/1990
 ```
 
 ### Example Output
