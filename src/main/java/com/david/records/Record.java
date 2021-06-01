@@ -17,6 +17,22 @@ public class Record {
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(PATTERN, Locale.US);
 
   public Record(String firstName, String lastName, String email, String favoriteColor, LocalDate dateOfBirth) {
+    if (firstName == null || firstName.isEmpty()) {
+      throw new IllegalArgumentException("The first name cannot be null or empty");
+    }
+    if (lastName == null || lastName.isEmpty()) {
+      throw new IllegalArgumentException("The last name cannot be null or empty");
+    }
+    if (email == null || email.isEmpty()) {
+      throw new IllegalArgumentException("The email cannot be null or empty");
+    }
+    if (favoriteColor == null || favoriteColor.isEmpty()) {
+      throw new IllegalArgumentException("The favorite color cannot be null or empty");
+    }
+    if (dateOfBirth == null) {
+      throw new IllegalArgumentException("The date of birth cannot be null");
+    }
+
     this.firstName = firstName;
     this.lastName = lastName;
     this.email = email;
