@@ -25,7 +25,7 @@ public class RecordsCommand {
     for (String filename : args) {
       Path filepath = Paths.get(filename);
       if (!Files.isReadable(filepath)) {
-        System.out.println(String.format("ERROR: The file [%s] is not readable.", filename));
+        System.out.println(String.format("ERROR: The file [%s] either doesn't exist or is not readable.", filename));
         return;
       }
     }
